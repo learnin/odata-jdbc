@@ -14,8 +14,8 @@ public class ODataResultSet implements ResultSet {
     private List<Map<String, Object>> rows;
     private int currentRow = -1;
 
-    ODataResultSet(Map<String, Object> oData) {
-        this.rows = (List<Map<String, Object>>) oData.get("value");
+    ODataResultSet(List<Map<String, Object>> rows) {
+        this.rows = rows;
     }
 
     @Override
