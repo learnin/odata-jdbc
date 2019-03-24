@@ -39,7 +39,7 @@ public class Driver implements java.sql.Driver {
 
     @Override
     public boolean acceptsURL(String url) throws SQLException {
-        return url.startsWith("jdbc:odata-jdbc://");
+        return url.startsWith("jdbc:odata-jdbc:https://") || url.startsWith("jdbc:odata-jdbc:http://");
     }
 
     @Override
