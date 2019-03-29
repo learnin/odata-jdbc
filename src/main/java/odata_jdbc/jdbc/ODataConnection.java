@@ -1,14 +1,30 @@
 package odata_jdbc.jdbc;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
 public class ODataConnection implements Connection {
+
+    private final QueryExecutor queryExecutor;
+
+    public ODataConnection(String url, Properties info) throws SQLException {
+        String serviceUrl = url.substring("jdbc:odata-jdbc:".length());
+        this.queryExecutor = new QueryExecutor(serviceUrl);
+    }
+
+    public QueryExecutor getQueryExecutor() {
+        return queryExecutor;
+    }
+
     @Override
     public Statement createStatement() throws SQLException {
-        return new ODataStatement();
+        return new ODataStatement(this);
     }
 
     @Override
@@ -48,7 +64,7 @@ public class ODataConnection implements Connection {
 
     @Override
     public void close() throws SQLException {
-
+        queryExecutor.close();
     }
 
     @Override
