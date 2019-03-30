@@ -1,9 +1,5 @@
 package odata_jdbc.jdbc;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
 import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
@@ -14,8 +10,8 @@ public class ODataConnection implements Connection {
     private final QueryExecutor queryExecutor;
 
     public ODataConnection(String url, Properties info) throws SQLException {
-        String serviceUrl = url.substring("jdbc:odata-jdbc:".length());
-        this.queryExecutor = new QueryExecutor(serviceUrl);
+        String serviceRootUrl = url.substring("jdbc:odata-jdbc:".length());
+        this.queryExecutor = new QueryExecutor(serviceRootUrl, info);
     }
 
     public QueryExecutor getQueryExecutor() {

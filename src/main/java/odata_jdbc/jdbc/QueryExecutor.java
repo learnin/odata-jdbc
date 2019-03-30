@@ -2,29 +2,39 @@ package odata_jdbc.jdbc;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.sql.SQLException;
+import java.util.Properties;
 
 public class QueryExecutor {
 
-    private final String serviceUrl;
+    private final String serviceRootUrl;
+    private final Properties jdbcProperties;
+
     private HttpURLConnection conn;
 
-    public QueryExecutor(String serviceUrl) {
-        this.serviceUrl = serviceUrl;
+    public QueryExecutor(String serviceRootUrl, Properties jdbcProperties) {
+        this.serviceRootUrl = serviceRootUrl;
+        this.jdbcProperties = jdbcProperties;
     }
 
     public String executeQuery(String sql) throws SQLException {
+        // FIXME: JDBC仕様ではjava.sql.Connectionはスレッドセーフであり、一般的なJDBCドライバはロックや直列化してスレッドセーフにしている模様なので対応必要
         try {
             // TODO: SQLのパース
-            String endpoint = serviceUrl + "People";
-            
-            conn = (HttpURLConnection) new URL(endpoint).openConnection();
+            String url = serviceRootUrl + "People";
+
+            // SQL実行時でないとODataサービスURLが決まらないので、このタイミングで接続する
+            conn = (HttpURLConnection) new URL(url).openConnection();
+
+            // TODO: 設定可能にする
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(10000);
+
             conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
             conn.setDoInput(true);
             conn.connect();
             StringBuilder result = new StringBuilder();

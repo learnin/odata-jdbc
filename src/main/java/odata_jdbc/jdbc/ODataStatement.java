@@ -29,7 +29,7 @@ public class ODataStatement implements Statement {
             throw new SQLException(e);
         }
         // OData V4 の場合
-        // TODO: OData versionはJDBCプロパティから指定。指定されていなければOData $metadatをたたいて判定
+        // TODO: OData versionはJDBCプロパティから指定。指定されていなければOData $metadataをたたいて判定
         return new ODataResultSet((List<Map<String, Object>>) oDataPayload.get("value"));
     }
 
