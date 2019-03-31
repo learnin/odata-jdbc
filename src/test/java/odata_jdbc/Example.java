@@ -15,7 +15,7 @@ public class Example {
     public void executeSql() throws Exception {
         try (Connection conn = DriverManager.getConnection("jdbc:odata-jdbc:https://services.odata.org/TripPinRESTierService/", "","")) {
             try (Statement statement = conn.createStatement()) {
-                String sql = "SELECT * FROM People WHERE FirstName = 'Russell'";
+                String sql = "SELECT UserName, FirstName FROM People WHERE FirstName = 'Russell'";
                 try (ResultSet rs = statement.executeQuery(sql)) {
                     rs.next();
                     assertEquals("russellwhyte", rs.getString("UserName"));

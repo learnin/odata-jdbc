@@ -107,5 +107,9 @@ public class SelectSqlParser {
             this.column = column;
             this.columnAs = columnAs;
         }
+
+        public String column() {
+            return column;
+        }
     }
 }

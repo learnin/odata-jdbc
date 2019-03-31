@@ -16,4 +16,7 @@ public class SqlParseResult {
         return fromTable;
     }
 
+    public List<SelectSqlParser.SelectColumn> selectColumns() {
+        return selectColumns;
+    }
 }
