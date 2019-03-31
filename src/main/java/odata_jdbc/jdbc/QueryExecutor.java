@@ -24,10 +24,11 @@ public class QueryExecutor {
         // FIXME: JDBC仕様ではjava.sql.Connectionはスレッドセーフであり、一般的なJDBCドライバはロックや直列化してスレッドセーフにしている模様なので対応必要
         try {
             // TODO: SQLのパース
-            String url = serviceRootUrl + "People";
+            SqlParseResult sqlParseResult = new SelectSqlParser().parse(sql);
+            URL url = new ODataUrlBuilder(serviceRootUrl, sqlParseResult).toURL();
 
             // SQL実行時でないとODataサービスURLが決まらないので、このタイミングで接続する
-            conn = (HttpURLConnection) new URL(url).openConnection();
+            conn = (HttpURLConnection) url.openConnection();
 
             // TODO: 設定可能にする
             conn.setConnectTimeout(5000);
