@@ -25,15 +25,29 @@ public class ODataUrlBuilder {
         StringBuilder queryString = new StringBuilder();
         selectColumns.stream().map(selectColumn -> selectColumn.column())
             .reduce((accum, column) -> accum + ", " + column).ifPresent(columns -> {
-            try {
-                queryString.append("$select=" + URLEncoder.encode(columns, "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
+                queryString.append("$select=" + urlEncode(columns));
         });
+
+        String wherePhrase = sqlParseResult.wherePhrase();
+        if (wherePhrase != null && !wherePhrase.isEmpty()) {
+            wherePhrase = wherePhrase.replaceAll("=", "eq");
+            if (queryString.length() > 0) {
+                queryString.append("&");
+            }
+            queryString.append("$filter=" + urlEncode(wherePhrase));
+        }
+
         if (queryString.length() > 0) {
             serviceUrl += "?" + queryString.toString();
         }
         return new URL(serviceUrl);
+    }
+
+    private String urlEncode(String value) {
+        try {
+            return URLEncoder.encode(value, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

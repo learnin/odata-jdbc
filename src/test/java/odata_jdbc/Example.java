@@ -19,6 +19,7 @@ public class Example {
                 try (ResultSet rs = statement.executeQuery(sql)) {
                     rs.next();
                     assertEquals("russellwhyte", rs.getString("UserName"));
+                    assertFalse(rs.next());
                 }
             }
         }
