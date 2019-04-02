@@ -30,7 +30,13 @@ public class ODataUrlBuilder {
 
         String wherePhrase = sqlParseResult.wherePhrase();
         if (wherePhrase != null && !wherePhrase.isEmpty()) {
+            wherePhrase = wherePhrase.replaceAll("!=", "ne");
+            wherePhrase = wherePhrase.replaceAll("<>", "ne");
+            wherePhrase = wherePhrase.replaceAll("<=", "le");
+            wherePhrase = wherePhrase.replaceAll(">=", "ge");
             wherePhrase = wherePhrase.replaceAll("=", "eq");
+            wherePhrase = wherePhrase.replaceAll("<", "lt");
+            wherePhrase = wherePhrase.replaceAll(">", "gt");
             if (queryString.length() > 0) {
                 queryString.append("&");
             }
