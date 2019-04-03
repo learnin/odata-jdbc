@@ -26,6 +26,7 @@ public class ODataUrlBuilder {
         selectColumns.stream().map(selectColumn -> selectColumn.column())
             .reduce((accum, column) -> accum + ", " + column).ifPresent(columns -> {
                 queryString.append("$select=" + urlEncode(columns));
+                // FIXME: DISTINCT があった場合の考慮
         });
 
         String wherePhrase = sqlParseResult.wherePhrase();
@@ -41,6 +42,7 @@ public class ODataUrlBuilder {
                 queryString.append("&");
             }
             queryString.append("$filter=" + urlEncode(wherePhrase));
+            // FIXME: テーブル名に別名をつけていて、hoge.column1 = 'xxx' みたいな場合の考慮
         }
 
         if (queryString.length() > 0) {
