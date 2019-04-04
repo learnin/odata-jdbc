@@ -210,34 +210,20 @@ public class SelectSqlParser {
         return result;
     }
 
+    private String substringToPhrase(String sql, String... phrases) {
+        for (String phrase : phrases) {
+            int index = indexOfIgnoreCase(sql, phrase);
+            if (index != -1) {
+                return sql.substring(0, index).trim();
+            }
+        }
+        return sql;
+    }
+
     private String extractFromPhrase(String sql) {
         int fromIndex = indexOfIgnoreCase(sql, " from ");
         String fromPhrase = sql.substring(fromIndex + " from ".length()).trim();
-        int whereIndex = indexOfIgnoreCase(fromPhrase, " where ");
-        if (whereIndex != -1) {
-            return fromPhrase.substring(0, whereIndex).trim();
-        }
-        int groupByIndex = indexOfIgnoreCase(fromPhrase," group by ");
-        if (groupByIndex != -1) {
-            return fromPhrase.substring(0, groupByIndex).trim();
-        }
-        int havingIndex = indexOfIgnoreCase(fromPhrase," having ");
-        if (havingIndex != -1) {
-            return fromPhrase.substring(0, havingIndex).trim();
-        }
-        int orderByIndex = indexOfIgnoreCase(fromPhrase," order by ");
-        if (orderByIndex != -1) {
-            return fromPhrase.substring(0, orderByIndex).trim();
-        }
-        int offsetIndex = indexOfIgnoreCase(fromPhrase," offset ");
-        if (offsetIndex != -1) {
-            return fromPhrase.substring(0, offsetIndex).trim();
-        }
-        int fetchIndex = indexOfIgnoreCase(fromPhrase," fetch ");
-        if (fetchIndex != -1) {
-            return fromPhrase.substring(0, fetchIndex).trim();
-        }
-        return fromPhrase;
+        return substringToPhrase(fromPhrase, " where ", " group by ", " having ", " order by ", " offset ", " fetch ");
     }
 
     private String extractWherePhrase(String sql) {
@@ -246,27 +232,7 @@ public class SelectSqlParser {
             return "";
         }
         String wherePhrase = sql.substring(whereIndex + " where ".length()).trim();
-        int groupByIndex = indexOfIgnoreCase(wherePhrase," group by ");
-        if (groupByIndex != -1) {
-            return wherePhrase.substring(0, groupByIndex).trim();
-        }
-        int havingIndex = indexOfIgnoreCase(wherePhrase," having ");
-        if (havingIndex != -1) {
-            return wherePhrase.substring(0, havingIndex).trim();
-        }
-        int orderByIndex = indexOfIgnoreCase(wherePhrase," order by ");
-        if (orderByIndex != -1) {
-            return wherePhrase.substring(0, orderByIndex).trim();
-        }
-        int offsetIndex = indexOfIgnoreCase(wherePhrase," offset ");
-        if (offsetIndex != -1) {
-            return wherePhrase.substring(0, offsetIndex).trim();
-        }
-        int fetchIndex = indexOfIgnoreCase(wherePhrase," fetch ");
-        if (fetchIndex != -1) {
-            return wherePhrase.substring(0, fetchIndex).trim();
-        }
-        return wherePhrase;
+        return substringToPhrase(wherePhrase, " group by ", " having ", " order by ", " offset ", " fetch ");
     }
 
     private String extractGroupByPhrase(String sql) {
@@ -275,23 +241,7 @@ public class SelectSqlParser {
             return "";
         }
         String groupByPhrase = sql.substring(groupByIndex + " group by ".length()).trim();
-        int havingIndex = indexOfIgnoreCase(groupByPhrase," having ");
-        if (havingIndex != -1) {
-            return groupByPhrase.substring(0, havingIndex).trim();
-        }
-        int orderByIndex = indexOfIgnoreCase(groupByPhrase," order by ");
-        if (orderByIndex != -1) {
-            return groupByPhrase.substring(0, orderByIndex).trim();
-        }
-        int offsetIndex = indexOfIgnoreCase(groupByPhrase," offset ");
-        if (offsetIndex != -1) {
-            return groupByPhrase.substring(0, offsetIndex).trim();
-        }
-        int fetchIndex = indexOfIgnoreCase(groupByPhrase," fetch ");
-        if (fetchIndex != -1) {
-            return groupByPhrase.substring(0, fetchIndex).trim();
-        }
-        return groupByPhrase;
+        return substringToPhrase(groupByPhrase, " having ", " order by ", " offset ", " fetch ");
     }
 
     private String extractHavingPhrase(String sql) {
@@ -300,19 +250,7 @@ public class SelectSqlParser {
             return "";
         }
         String havingPhrase = sql.substring(havingIndex + " having ".length()).trim();
-        int orderByIndex = indexOfIgnoreCase(havingPhrase," order by ");
-        if (orderByIndex != -1) {
-            return havingPhrase.substring(0, orderByIndex).trim();
-        }
-        int offsetIndex = indexOfIgnoreCase(havingPhrase," offset ");
-        if (offsetIndex != -1) {
-            return havingPhrase.substring(0, offsetIndex).trim();
-        }
-        int fetchIndex = indexOfIgnoreCase(havingPhrase," fetch ");
-        if (fetchIndex != -1) {
-            return havingPhrase.substring(0, fetchIndex).trim();
-        }
-        return havingPhrase;
+        return substringToPhrase(havingPhrase, " order by ", " offset ", " fetch ");
     }
 
     private String extractOrderByPhrase(String sql) {
@@ -321,15 +259,7 @@ public class SelectSqlParser {
             return "";
         }
         String orderByPhrase = sql.substring(orderByIndex + " order by ".length()).trim();
-        int offsetIndex = indexOfIgnoreCase(orderByPhrase," offset ");
-        if (offsetIndex != -1) {
-            return orderByPhrase.substring(0, offsetIndex).trim();
-        }
-        int fetchIndex = indexOfIgnoreCase(orderByPhrase," fetch ");
-        if (fetchIndex != -1) {
-            return orderByPhrase.substring(0, fetchIndex).trim();
-        }
-        return orderByPhrase;
+        return substringToPhrase(orderByPhrase, " offset ", " fetch ");
     }
 
     private String extractOffsetPhrase(String sql) {
@@ -338,11 +268,7 @@ public class SelectSqlParser {
             return "";
         }
         String offsetPhrase = sql.substring(offsetIndex + " offset ".length()).trim();
-        int fetchIndex = indexOfIgnoreCase(offsetPhrase," fetch ");
-        if (fetchIndex != -1) {
-            return offsetPhrase.substring(0, fetchIndex).trim();
-        }
-        return offsetPhrase;
+        return substringToPhrase(offsetPhrase, " fetch ");
     }
 
     private String extractFetchPhrase(String sql) {
