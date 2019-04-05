@@ -285,7 +285,6 @@ public class SelectSqlParser {
             return fromPhrase.substring(0, fromTableSpaceIndex);
         }
         return fromPhrase;
-        // FIXME: FROM dbname.schema.table のようなSQLの場合の考慮
     }
 
     private List<SelectColumn> parseSelectColumnsPhrase(String selectColumnsPhrase) throws SQLSyntaxErrorException {
