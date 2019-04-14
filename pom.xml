@@ -40,6 +40,12 @@
             <version>${junit.vintage.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-catalina</artifactId>
+            <version>9.0.17</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
