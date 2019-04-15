@@ -26,7 +26,6 @@ public class ODataUrlBuilder {
         selectColumns.stream().map(selectColumn -> selectColumn.column())
             .reduce((accum, column) -> accum + ", " + column).ifPresent(columns -> {
                 queryString.append("$select=" + urlEncode(columns));
-                // FIXME: DISTINCT があった場合の考慮
         });
 
         String wherePhrase = sqlParseResult.wherePhrase();

@@ -194,7 +194,11 @@ public class SelectSqlParser {
         Map<String, String> result = new HashMap<>();
 
         int fromIndex = indexOfIgnoreCase(sql, " from ");
-        result.put("select", sql.substring("select ".length(), fromIndex).trim());
+        String selectPhrase = sql.substring("select ".length(), fromIndex).trim();
+        if (indexOfIgnoreCase(selectPhrase, "distinct ") != -1) {
+            throw new SQLSyntaxErrorException("not supported distinct");
+        }
+        result.put("select", selectPhrase);
 
         String fromPhrase = extractFromPhrase(sql);
         if (indexOfIgnoreCase(fromPhrase, " join ") != -1 || fromPhrase.indexOf(",") != -1) {
