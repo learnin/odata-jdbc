@@ -23,7 +23,6 @@ public class QueryExecutor {
     public String executeQuery(String sql) throws SQLException {
         // FIXME: JDBC仕様ではjava.sql.Connectionはスレッドセーフであり、一般的なJDBCドライバはロックや直列化してスレッドセーフにしている模様なので対応必要
         try {
-            // TODO: SQLのパース
             SqlParseResult sqlParseResult = new SelectSqlParser().parse(sql);
             URL url = new ODataUrlBuilder(serviceRootUrl, sqlParseResult).toURL();
 

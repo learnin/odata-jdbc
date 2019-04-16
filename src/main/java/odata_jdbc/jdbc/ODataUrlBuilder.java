@@ -5,6 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class ODataUrlBuilder {
 
@@ -37,6 +38,10 @@ public class ODataUrlBuilder {
             wherePhrase = wherePhrase.replaceAll("=", "eq");
             wherePhrase = wherePhrase.replaceAll("<", "lt");
             wherePhrase = wherePhrase.replaceAll(">", "gt");
+            wherePhrase = replaceAllIgnoreCase(wherePhrase, " AND ", " and ");
+            wherePhrase = replaceAllIgnoreCase(wherePhrase, " OR ", " or ");
+            wherePhrase = replaceAllIgnoreCase(wherePhrase, " NOT ", " not ");
+            wherePhrase = replaceAllIgnoreCase(wherePhrase, " IN ", " in ");
             if (queryString.length() > 0) {
                 queryString.append("&");
             }
@@ -57,4 +62,9 @@ public class ODataUrlBuilder {
             throw new RuntimeException(e);
         }
     }
+
+    private String replaceAllIgnoreCase(String target, String regex, String replacement) {
+        return Pattern.compile(regex, Pattern.CASE_INSENSITIVE).matcher(target).replaceAll(replacement);
+    }
+
 }
