@@ -25,7 +25,10 @@ public class Example {
                         + " FROM People"
                         + " WHERE FirstName = 'Russell'"
                         + " And (UserName != 'russellwhyte' Or UserName = 'russellwhyte')"
-                        + " AND Not (UserName != 'russellwhyte')";
+                        + " AND Not (UserName != 'russellwhyte')"
+                        + " AND UserName Like '%llw%'"
+                        + " AND UserName Like '%e'"
+                        + " AND UserName Like 'r%'";
                 try (ResultSet rs = statement.executeQuery(sql)) {
                     assertTrue(rs.next());
                     assertEquals("russellwhyte", rs.getString("UserName"));

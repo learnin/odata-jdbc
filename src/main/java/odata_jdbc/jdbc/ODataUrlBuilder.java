@@ -1,16 +1,22 @@
 package odata_jdbc.jdbc;
 
+import odata_jdbc.uitl.StringUtil;
+
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ODataUrlBuilder {
 
     private final String serviceRootUrl;
     private final SqlParseResult sqlParseResult;
+
+    // TODO 設定可能にする
+    private int oDataVersion = 4;
 
     public ODataUrlBuilder(String serviceRootUrl, SqlParseResult sqlParseResult) {
         this.serviceRootUrl = serviceRootUrl;
@@ -31,6 +37,7 @@ public class ODataUrlBuilder {
 
         String wherePhrase = sqlParseResult.wherePhrase();
         if (wherePhrase != null && !wherePhrase.isEmpty()) {
+            // Logical Operators
             wherePhrase = wherePhrase.replaceAll("!=", "ne");
             wherePhrase = wherePhrase.replaceAll("<>", "ne");
             wherePhrase = wherePhrase.replaceAll("<=", "le");
@@ -42,6 +49,9 @@ public class ODataUrlBuilder {
             wherePhrase = replaceAllIgnoreCase(wherePhrase, " OR ", " or ");
             wherePhrase = replaceAllIgnoreCase(wherePhrase, " NOT ", " not ");
             wherePhrase = replaceAllIgnoreCase(wherePhrase, " IN ", " in ");
+
+            // String Functions
+            wherePhrase = transformLikeToODataOperator(wherePhrase);
             if (queryString.length() > 0) {
                 queryString.append("&");
             }
@@ -65,6 +75,54 @@ public class ODataUrlBuilder {
 
     private String replaceAllIgnoreCase(String target, String regex, String replacement) {
         return Pattern.compile(regex, Pattern.CASE_INSENSITIVE).matcher(target).replaceAll(replacement);
+    }
+
+    private String transformLikeToODataOperator(String wherePhrase) {
+        int likeIndex = StringUtil.indexOfIgnoreCase(wherePhrase, " LIKE ");
+        if (likeIndex == -1) {
+            return wherePhrase;
+        }
+        int spaceIndexBeforeTargetColumn = wherePhrase.lastIndexOf(" ", likeIndex - 1);
+        if (spaceIndexBeforeTargetColumn == -1) {
+            spaceIndexBeforeTargetColumn = 0;
+        }
+        String targetColumn = wherePhrase.substring(spaceIndexBeforeTargetColumn, likeIndex).trim();
+
+
+        String afterLike = wherePhrase.substring(likeIndex + " LIKE ".length()).trim();
+        int targetValueIndex = afterLike.indexOf(" ");
+        String targetValue;
+        if (targetValueIndex == -1) {
+            targetValue = afterLike;
+        } else {
+            targetValue = afterLike.substring(0, targetValueIndex);
+        }
+
+        String oDataOperator = "";
+        if (targetValue.startsWith("'%") && targetValue.endsWith("%'")) {
+            targetValue = targetValue.replaceAll("%", "");
+
+            if (oDataVersion == 2 || oDataVersion == 3) {
+                oDataOperator = "substringof(" + targetValue + ", " + targetColumn + ")";
+            } else {
+                oDataOperator = "contains(" + targetColumn + "," + targetValue + ")";
+            }
+        } else if (targetValue.startsWith("'%")) {
+            targetValue = targetValue.replaceAll("%", "");
+            oDataOperator = "endswith(" + targetColumn + "," + targetValue + ")";
+        } else if (targetValue.endsWith("%'")) {
+            targetValue = targetValue.replaceAll("%", "");
+            oDataOperator = "startswith(" + targetColumn + "," + targetValue + ")";
+        } else {
+            // FIXME: 先頭、末尾以外に%がある場合や、_がある場合、ESCAPE指定がある場合の考慮
+            throw new RuntimeException();
+        }
+
+        String result = wherePhrase.substring(0, spaceIndexBeforeTargetColumn) + " " + oDataOperator;
+        if (targetValueIndex != -1) {
+            result += afterLike.substring(targetValueIndex);
+        }
+        return transformLikeToODataOperator(result);
     }
 
 }
