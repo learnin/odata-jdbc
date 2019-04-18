@@ -6,9 +6,15 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.lang.Long.parseLong;
 
 public class ODataUrlBuilder {
 
@@ -98,6 +104,7 @@ public class ODataUrlBuilder {
             targetValue = afterLike.substring(0, targetValueIndex);
         }
 
+        // FIXME: ODataバージョンでポリモーフィズムを使うようにする
         String oDataOperator = "";
         if (targetValue.startsWith("'%") && targetValue.endsWith("%'")) {
             targetValue = targetValue.replaceAll("%", "");
@@ -123,6 +130,49 @@ public class ODataUrlBuilder {
             result += afterLike.substring(targetValueIndex);
         }
         return transformLikeToODataOperator(result);
+    }
+
+    /**
+     * OData Edm.DateTime リテラルフォーマットに変換します。
+     *
+     * @param date 変換対象
+     * @return 変換後の文字列
+     */
+    // TODO: 動作確認未
+    private String toEdmDateTimeLiteral(Date date) {
+        return "datetime'" + (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")).format(date) + "'";
+    }
+
+    /**
+     * OData Edm.DateTime JSONフォーマット文字列を Date に変換します。
+     *
+     * @param edmDateTimeJsonString Edm.DateTime JSONフォーマット文字列
+     * @return 変換後の Date
+     */
+    // TODO: 動作確認未
+    private Date parseEdmDateTimeJson(String edmDateTimeJsonString) {
+        // Edm.DateTime JSONフォーマットの正規表現
+        // e.g. /Date(1547164800000)/
+        // e.g. /Date(1547164800000+540)/
+        Pattern pattern = Pattern.compile("^/Date\\((-?\\d+)(\\+|-)?(\\d+)?\\)/$");
+        Matcher m = pattern.matcher(edmDateTimeJsonString);
+        if (!m.matches()) {
+            return null;
+        }
+        // group(1): エポックミリ秒
+        // group(2): タイムゾーンオフセットの+/-
+        // group(3): タイムゾーンオフセットの分
+        Date result = new Date(Long.valueOf(m.group(1)));
+        if (m.groupCount() < 3) {
+            return result;
+        }
+        String offsetSign = m.group(2);
+        int offsetMinutes = Integer.valueOf(m.group(3));
+        if (offsetSign.equals("-")) {
+            offsetMinutes = -offsetMinutes;
+        }
+        OffsetDateTime r = result.toInstant().atOffset(ZoneOffset.ofHoursMinutes(0, offsetMinutes));
+        return Date.from(r.toInstant());
     }
 
 }
