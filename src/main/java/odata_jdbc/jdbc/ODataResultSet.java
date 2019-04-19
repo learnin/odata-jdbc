@@ -5,9 +5,13 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ODataResultSet implements ResultSet {
 
@@ -169,7 +173,15 @@ public class ODataResultSet implements ResultSet {
 
     @Override
     public Date getDate(String columnLabel) throws SQLException {
-        return null;
+        String value = getString(columnLabel);
+        if (value == null) {
+            return null;
+        }
+        java.util.Date result = parseEdmDateTimeJson(value);
+        if (result == null) {
+            throw new SQLException("can't parsed as Date. value=" + value);
+        }
+        return toJavaSqlDate(result);
     }
 
     @Override
@@ -179,7 +191,15 @@ public class ODataResultSet implements ResultSet {
 
     @Override
     public Timestamp getTimestamp(String columnLabel) throws SQLException {
-        return null;
+        String value = getString(columnLabel);
+        if (value == null) {
+            return null;
+        }
+        java.util.Date result = parseEdmDateTimeJson(value);
+        if (result == null) {
+            throw new SQLException("can't parsed as Timestamp. value=" + value);
+        }
+        return new Timestamp(result.getTime());
     }
 
     @Override
@@ -976,4 +996,47 @@ public class ODataResultSet implements ResultSet {
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return false;
     }
+
+    /**
+     * OData Edm.DateTime JSONフォーマット文字列を Date に変換します。
+     *
+     * @param edmDateTimeJsonString Edm.DateTime JSONフォーマット文字列
+     * @return 変換後の Date
+     */
+    // TODO: 動作確認未
+    private java.util.Date parseEdmDateTimeJson(String edmDateTimeJsonString) {
+        // Edm.DateTime JSONフォーマットの正規表現
+        // e.g. /Date(1547164800000)/
+        // e.g. /Date(1547164800000+540)/
+        Pattern pattern = Pattern.compile("^/Date\\((-?\\d+)(\\+|-)?(\\d+)?\\)/$");
+        Matcher m = pattern.matcher(edmDateTimeJsonString);
+        if (!m.matches()) {
+            return null;
+        }
+        // group(1): エポックミリ秒
+        // group(2): タイムゾーンオフセットの+/-
+        // group(3): タイムゾーンオフセットの分
+        java.util.Date result = new java.util.Date(Long.valueOf(m.group(1)));
+        if (m.group(2) == null || m.group(3) == null) {
+            return result;
+        }
+        String offsetSign = m.group(2);
+        int offsetMinutes = Integer.valueOf(m.group(3));
+        if (offsetSign.equals("-")) {
+            offsetMinutes = -offsetMinutes;
+        }
+        OffsetDateTime r = result.toInstant().atOffset(ZoneOffset.ofHoursMinutes(0, offsetMinutes));
+        return java.util.Date.from(r.toInstant());
+    }
+
+    private Date toJavaSqlDate(java.util.Date javaUtilDate) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(javaUtilDate);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return new Date(cal.getTimeInMillis());
+    }
+
 }

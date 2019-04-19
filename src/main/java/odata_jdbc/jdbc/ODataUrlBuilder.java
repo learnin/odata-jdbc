@@ -143,36 +143,4 @@ public class ODataUrlBuilder {
         return "datetime'" + (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")).format(date) + "'";
     }
 
-    /**
-     * OData Edm.DateTime JSONフォーマット文字列を Date に変換します。
-     *
-     * @param edmDateTimeJsonString Edm.DateTime JSONフォーマット文字列
-     * @return 変換後の Date
-     */
-    // TODO: 動作確認未
-    private Date parseEdmDateTimeJson(String edmDateTimeJsonString) {
-        // Edm.DateTime JSONフォーマットの正規表現
-        // e.g. /Date(1547164800000)/
-        // e.g. /Date(1547164800000+540)/
-        Pattern pattern = Pattern.compile("^/Date\\((-?\\d+)(\\+|-)?(\\d+)?\\)/$");
-        Matcher m = pattern.matcher(edmDateTimeJsonString);
-        if (!m.matches()) {
-            return null;
-        }
-        // group(1): エポックミリ秒
-        // group(2): タイムゾーンオフセットの+/-
-        // group(3): タイムゾーンオフセットの分
-        Date result = new Date(Long.valueOf(m.group(1)));
-        if (m.groupCount() < 3) {
-            return result;
-        }
-        String offsetSign = m.group(2);
-        int offsetMinutes = Integer.valueOf(m.group(3));
-        if (offsetSign.equals("-")) {
-            offsetMinutes = -offsetMinutes;
-        }
-        OffsetDateTime r = result.toInstant().atOffset(ZoneOffset.ofHoursMinutes(0, offsetMinutes));
-        return Date.from(r.toInstant());
-    }
-
 }

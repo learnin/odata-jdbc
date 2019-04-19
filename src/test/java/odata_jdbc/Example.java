@@ -6,10 +6,8 @@ import org.junit.jupiter.api.Test;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -18,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class Example {
 
     @Test
-    public void executeSqlUsingDriverManager() throws Exception {
+    public void executeSqlUsingDriverManagerV4() throws Exception {
         try (Connection conn = DriverManager.getConnection("jdbc:odata-jdbc:https://services.odata.org/TripPinRESTierService/", "", "")) {
             try (Statement statement = conn.createStatement()) {
                 String sql = "SELECT UserName, FirstName"
@@ -33,6 +31,24 @@ public class Example {
                     assertTrue(rs.next());
                     assertEquals("russellwhyte", rs.getString("UserName"));
                     assertFalse(rs.next());
+                }
+            }
+        }
+    }
+
+    @Test
+    public void executeSqlUsingDriverManagerV2() throws Exception {
+        try (Connection conn = DriverManager.getConnection("jdbc:odata-jdbc:https://services.odata.org/V2/(S(readwrite))/OData/OData.svc/", "", "")) {
+            try (Statement statement = conn.createStatement()) {
+                String sql = "SELECT *"
+                        + " FROM Products"
+                        + " WHERE Name = 'Bread'"; // FIXME: WHERE句が効いていない
+                try (ResultSet rs = statement.executeQuery(sql)) {
+                    assertTrue(rs.next());
+                    assertEquals("Bread", rs.getString("Name"));
+//                    assertEquals(new Date(694224000000L), rs.getDate("ReleaseDate"));
+                    assertEquals(new Timestamp(694224000000L), rs.getTimestamp("ReleaseDate"));
+//                    assertFalse(rs.next());
                 }
             }
         }

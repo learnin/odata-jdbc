@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,9 +29,16 @@ public class ODataStatement implements Statement {
         } catch (IOException e) {
             throw new SQLException(e);
         }
-        // OData V4 の場合
+
         // TODO: OData versionはJDBCプロパティから指定。指定されていなければOData $metadataをたたいて判定
-        return new ODataResultSet((List<Map<String, Object>>) oDataPayload.get("value"));
+        if (oDataPayload.containsKey("value")) {
+            // OData V4 の場合
+            return new ODataResultSet((List<Map<String, Object>>) oDataPayload.get("value"));
+        } else if (oDataPayload.containsKey("d")) {
+            // OData V2 の場合
+            return new ODataResultSet((List<Map<String, Object>>) oDataPayload.get("d"));
+        }
+        return new ODataResultSet(new ArrayList<>());
     }
 
     @Override
