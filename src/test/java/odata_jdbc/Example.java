@@ -7,11 +7,9 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.Date;
+import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class Example {
 
@@ -42,13 +40,13 @@ public class Example {
             try (Statement statement = conn.createStatement()) {
                 String sql = "SELECT *"
                         + " FROM Products"
-                        + " WHERE Name = 'Bread'"; // FIXME: WHERE句が効いていない
+                        + " WHERE Name = 'Bread'";
                 try (ResultSet rs = statement.executeQuery(sql)) {
                     assertTrue(rs.next());
                     assertEquals("Bread", rs.getString("Name"));
-                    assertEquals(new java.sql.Date(694224000000L).toLocalDate(), rs.getDate("ReleaseDate").toLocalDate());
+                    assertEquals(LocalDate.of(1992, 1, 1), rs.getDate("ReleaseDate").toLocalDate());
                     assertEquals(new Timestamp(694224000000L), rs.getTimestamp("ReleaseDate"));
-//                    assertFalse(rs.next());
+                    assertFalse(rs.next());
                 }
             }
         }

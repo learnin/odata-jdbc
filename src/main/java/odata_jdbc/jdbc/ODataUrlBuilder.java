@@ -7,14 +7,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static java.lang.Long.parseLong;
 
 public class ODataUrlBuilder {
 
@@ -31,15 +26,15 @@ public class ODataUrlBuilder {
 
     public URL toURL() throws MalformedURLException {
         String serviceUrl = serviceRootUrl + sqlParseResult.from();
-        List<SelectSqlParser.SelectColumn> selectColumns = sqlParseResult.selectColumns();
-        if (selectColumns.get(0).column().equals("*")) {
-            return new URL(serviceUrl);
-        }
         StringBuilder queryString = new StringBuilder();
-        selectColumns.stream().map(selectColumn -> selectColumn.column())
-            .reduce((accum, column) -> accum + ", " + column).ifPresent(columns -> {
+
+        List<SelectSqlParser.SelectColumn> selectColumns = sqlParseResult.selectColumns();
+        if (!selectColumns.get(0).column().equals("*")) {
+            selectColumns.stream().map(selectColumn -> selectColumn.column())
+                    .reduce((accum, column) -> accum + ", " + column).ifPresent(columns -> {
                 queryString.append("$select=" + urlEncode(columns));
-        });
+            });
+        }
 
         String wherePhrase = sqlParseResult.wherePhrase();
         if (wherePhrase != null && !wherePhrase.isEmpty()) {

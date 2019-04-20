@@ -33,7 +33,7 @@ public class ODataResultSet implements ResultSet {
 
     @Override
     public void close() throws SQLException {
-
+        rows.clear();
     }
 
     @Override
@@ -177,16 +177,24 @@ public class ODataResultSet implements ResultSet {
         if (value == null) {
             return null;
         }
-        java.util.Date result = parseEdmDateTimeJson(value);
-        if (result == null) {
+        java.util.Date utilDate = parseEdmDateTimeJson(value);
+        if (utilDate == null) {
             throw new SQLException("can't parsed as Date. value=" + value);
         }
-        return toJavaSqlDate(result);
+        return toSqlDate(utilDate);
     }
 
     @Override
     public Time getTime(String columnLabel) throws SQLException {
-        return null;
+        String value = getString(columnLabel);
+        if (value == null) {
+            return null;
+        }
+        java.util.Date utilDate = parseEdmDateTimeJson(value);
+        if (utilDate == null) {
+            throw new SQLException("can't parsed as Time. value=" + value);
+        }
+        return toSqlTime(utilDate);
     }
 
     @Override
@@ -195,11 +203,11 @@ public class ODataResultSet implements ResultSet {
         if (value == null) {
             return null;
         }
-        java.util.Date result = parseEdmDateTimeJson(value);
-        if (result == null) {
+        java.util.Date utilDate = parseEdmDateTimeJson(value);
+        if (utilDate == null) {
             throw new SQLException("can't parsed as Timestamp. value=" + value);
         }
-        return new Timestamp(result.getTime());
+        return new Timestamp(utilDate.getTime());
     }
 
     @Override
@@ -1029,14 +1037,23 @@ public class ODataResultSet implements ResultSet {
         return java.util.Date.from(r.toInstant());
     }
 
-    private Date toJavaSqlDate(java.util.Date javaUtilDate) {
+    private Date toSqlDate(java.util.Date utilDate) {
         Calendar cal = Calendar.getInstance();
-        cal.setTime(javaUtilDate);
+        cal.setTime(utilDate);
         cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         return new Date(cal.getTimeInMillis());
+    }
+
+    private Time toSqlTime(java.util.Date utilDate) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(utilDate);
+        cal.set(Calendar.YEAR, 1970);
+        cal.set(Calendar.MONTH, Calendar.JANUARY);
+        cal.set(Calendar.DATE, 1);
+        return new Time(cal.getTimeInMillis());
     }
 
 }
