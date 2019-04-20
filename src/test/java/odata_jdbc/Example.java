@@ -46,7 +46,7 @@ public class Example {
                 try (ResultSet rs = statement.executeQuery(sql)) {
                     assertTrue(rs.next());
                     assertEquals("Bread", rs.getString("Name"));
-//                    assertEquals(new Date(694224000000L), rs.getDate("ReleaseDate"));
+                    assertEquals(new java.sql.Date(694224000000L).toLocalDate(), rs.getDate("ReleaseDate").toLocalDate());
                     assertEquals(new Timestamp(694224000000L), rs.getTimestamp("ReleaseDate"));
 //                    assertFalse(rs.next());
                 }
