@@ -127,15 +127,4 @@ public class ODataUrlBuilder {
         return transformLikeToODataOperator(result);
     }
 
-    /**
-     * OData Edm.DateTime リテラルフォーマットに変換します。
-     *
-     * @param date 変換対象
-     * @return 変換後の文字列
-     */
-    // TODO: 動作確認未
-    private String toEdmDateTimeLiteral(Date date) {
-        return "datetime'" + (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")).format(date) + "'";
-    }
-
 }
