@@ -145,7 +145,7 @@ public class ODataResultSet implements ResultSet {
 
     @Override
     public int getInt(String columnLabel) throws SQLException {
-        return 0;
+        return ((Integer) rows.get(currentRow).get(columnLabel)).intValue();
     }
 
     @Override

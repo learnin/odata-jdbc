@@ -46,6 +46,7 @@ public class Example {
                     assertEquals("Bread", rs.getString("Name"));
                     assertEquals(LocalDate.of(1992, 1, 1), rs.getDate("ReleaseDate").toLocalDate());
                     assertEquals(new Timestamp(694224000000L), rs.getTimestamp("ReleaseDate"));
+                    assertEquals(4, rs.getInt("Rating"));
                     assertFalse(rs.next());
                 }
             }
