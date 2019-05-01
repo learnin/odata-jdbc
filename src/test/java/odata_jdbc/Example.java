@@ -35,6 +35,28 @@ public class Example {
     }
 
     @Test
+    public void executePrepareStatement() throws Exception {
+        String sql = "SELECT UserName, FirstName"
+                + " FROM People"
+                + " WHERE FirstName = ?";
+//                + " And (UserName != 'russellwhyte' Or UserName = 'russellwhyte')"
+//                + " AND Not (UserName != 'russellwhyte')"
+//                + " AND UserName Like '%llw%'"
+//                + " AND UserName Like '%e'"
+//                + " AND UserName Like 'r%'";
+        try (Connection conn = DriverManager.getConnection("jdbc:odata-jdbc:https://services.odata.org/TripPinRESTierService/", "", "")) {
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(0, "Russell");
+                try (ResultSet rs = ps.executeQuery()) {
+                    assertTrue(rs.next());
+                    assertEquals("russellwhyte", rs.getString("UserName"));
+                    assertFalse(rs.next());
+                }
+            }
+        }
+    }
+
+    @Test
     public void executeSqlUsingDriverManagerV2() throws Exception {
         try (Connection conn = DriverManager.getConnection("jdbc:odata-jdbc:https://services.odata.org/V2/(S(readwrite))/OData/OData.svc/", "", "")) {
             try (Statement statement = conn.createStatement()) {

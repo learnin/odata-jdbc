@@ -25,7 +25,7 @@ public class ODataConnection implements Connection {
 
     @Override
     public PreparedStatement prepareStatement(String sql) throws SQLException {
-        return null;
+        return new ODataPreparedStatement(this, sql);
     }
 
     @Override

@@ -7,13 +7,9 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ODataResultSet implements ResultSet {
 
