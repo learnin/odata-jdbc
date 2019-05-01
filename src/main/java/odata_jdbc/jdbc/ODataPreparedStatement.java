@@ -1,25 +1,21 @@
 package odata_jdbc.jdbc;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
-import java.sql.Date;
-import java.util.*;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
-public class ODataPreparedStatement implements PreparedStatement {
+public class ODataPreparedStatement extends AbstractODataStatement implements PreparedStatement {
 
-    private final ODataConnection conn;
     private final String sql;
     private Map<Integer, Object> parameterMap = new HashMap<>();
 
     public ODataPreparedStatement(ODataConnection conn, String sql) {
-        this.conn = conn;
+        super(conn);
         this.sql = sql;
     }
 
@@ -35,27 +31,7 @@ public class ODataPreparedStatement implements PreparedStatement {
             }
             // TODO: 他の型への対応
         }
-
-        // TODO: ODataStatement#executeQuery と重複コードなのでリファクタリングする
-        QueryExecutor queryExecutor = conn.getQueryExecutor();
-        String oDataPayloadString = queryExecutor.executeQuery(bindedSql);
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, Object> oDataPayload = null;
-        try {
-            oDataPayload = objectMapper.readValue(oDataPayloadString, new TypeReference<LinkedHashMap<String, Object>>(){});
-        } catch (IOException e) {
-            throw new SQLException(e);
-        }
-
-        // TODO: OData versionはJDBCプロパティから指定。指定されていなければOData $metadataをたたいて判定
-        if (oDataPayload.containsKey("value")) {
-            // OData V4 の場合
-            return new ODataResultSet((List<Map<String, Object>>) oDataPayload.get("value"));
-        } else if (oDataPayload.containsKey("d")) {
-            // OData V2 の場合
-            return new ODataResultSet((List<Map<String, Object>>) oDataPayload.get("d"));
-        }
-        return new ODataResultSet(new ArrayList<>());
+        return super.executeQuery(bindedSql);
     }
 
     @Override
