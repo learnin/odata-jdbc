@@ -19,6 +19,10 @@ public class ODataPreparedStatement extends AbstractODataStatement implements Pr
         this.sql = sql;
     }
 
+    private String escapeSingleQuote(String value) {
+        return value.replaceAll("'", "''");
+    }
+
     @Override
     public ResultSet executeQuery() throws SQLException {
         String bindedSql = sql;
@@ -26,8 +30,7 @@ public class ODataPreparedStatement extends AbstractODataStatement implements Pr
         while (bindedSql.contains("?")) {
             Object parameter = parameterMap.get(parameterIndex);
             if (parameter instanceof String) {
-                // TODO: パラメータにシングルクォーテーションが含まれる場合の考慮
-                bindedSql = bindedSql.replaceFirst("\\?", "'" + (String) parameter + "'");
+                bindedSql = bindedSql.replaceFirst("\\?", "'" + escapeSingleQuote((String) parameter) + "'");
             }
             // TODO: 他の型への対応
         }

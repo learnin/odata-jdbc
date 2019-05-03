@@ -36,20 +36,15 @@ public class Example {
 
     @Test
     public void executePrepareStatement() throws Exception {
-        String sql = "SELECT UserName, FirstName"
-                + " FROM People"
-                + " WHERE FirstName = ?";
-//                + " And (UserName != 'russellwhyte' Or UserName = 'russellwhyte')"
-//                + " AND Not (UserName != 'russellwhyte')"
-//                + " AND UserName Like '%llw%'"
-//                + " AND UserName Like '%e'"
-//                + " AND UserName Like 'r%'";
-        try (Connection conn = DriverManager.getConnection("jdbc:odata-jdbc:https://services.odata.org/TripPinRESTierService/", "", "")) {
+        String sql = "SELECT *"
+                + " FROM Customers"
+                + " WHERE CompanyName = ?";
+        try (Connection conn = DriverManager.getConnection("jdbc:odata-jdbc:https://services.odata.org/V3/Northwind/Northwind.svc/", "", "")) {
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(0, "Russell");
+                ps.setString(0, "B's Beverages");
                 try (ResultSet rs = ps.executeQuery()) {
                     assertTrue(rs.next());
-                    assertEquals("russellwhyte", rs.getString("UserName"));
+                    assertEquals("B's Beverages", rs.getString("CompanyName"));
                     assertFalse(rs.next());
                 }
             }

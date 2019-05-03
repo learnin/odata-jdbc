@@ -37,6 +37,7 @@ public class ODataUrlBuilder {
         String wherePhrase = sqlParseResult.wherePhrase();
         if (wherePhrase != null && !wherePhrase.isEmpty()) {
             // Logical Operators
+            // FIXME: id = 'a==' のように値に = とかが入っているとそこまで置換されてしまうので修正必要
             wherePhrase = wherePhrase.replaceAll("!=", "ne");
             wherePhrase = wherePhrase.replaceAll("<>", "ne");
             wherePhrase = wherePhrase.replaceAll("<=", "le");
