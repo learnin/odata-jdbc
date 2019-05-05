@@ -35,7 +35,7 @@ public class Example {
     }
 
     @Test
-    public void executePrepareStatement() throws Exception {
+    public void executePrepareStatementWithSingleQuote() throws Exception {
         String sql = "SELECT *"
                 + " FROM Customers"
                 + " WHERE CompanyName = ?";
@@ -50,6 +50,32 @@ public class Example {
             }
         }
     }
+
+//    // TODOが未実装でテストが通らないため今はコメントアウト
+//    @Test
+//    public void executePrepareStatementWithGuid() throws Exception {
+//        String sql = "SELECT *"
+//                + " FROM Advertisements"
+//                + " WHERE ID = ?";
+//        try (Connection conn = DriverManager.getConnection("jdbc:odata-jdbc:https://services.odata.org/V3/OData/OData.svc/", "", "")) {
+//            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+//                // TODO: このIDフィールドはEdm.Guid型なので、$filter=ID eq guid'f89dee73-af9f-4cd4-b330-db93c25ff3c7' とする必要がある
+//                //       Edm.Guid型かどうかの判定は$metadataを取得するしかなさそう？参考にするために、普通のJDBCドライバはResultSetMetaDataをいつ取得するのか調査する
+//                //       -> PostgreSQLの場合、フィールド定義情報はResultSetインスタンス生成時にコンストラクタ引数として渡されており、SQL実行時に取得されているっぽい。
+//                //          テーブル情報等一部の情報はResultSetMetaDataのメソッドを呼び出した時にSQL実行して取得している。
+//                //       -> 毎回metadata取得よりはSQL独自文法・関数を導入してでも1リクエストにした方がユーザにとってはよくないか？
+//                //          ps.setGuid(0, new Guid("f89dee73-af9f-4cd4-b330-db93c25ff3c7")); を用意するとか WHERE ID = guid'f89dee73-af9f-4cd4-b330-db93c25ff3c7' で書いてもらうとか。
+//                //          ただしps.setGuidは実装してもO/Rマッパーからは呼ばれないだろうからあまり使われなさそう。
+//                //       -> 他にもmetadataがほしいケースが出てくるかもしれないので、ある程度出揃ってから決める。
+//                ps.setString(0, "f89dee73-af9f-4cd4-b330-db93c25ff3c7");
+//                try (ResultSet rs = ps.executeQuery()) {
+//                    assertTrue(rs.next());
+//                    assertEquals("f89dee73-af9f-4cd4-b330-db93c25ff3c7", rs.getString("ID"));
+//                    assertFalse(rs.next());
+//                }
+//            }
+//        }
+//    }
 
     @Test
     public void executeSqlUsingDriverManagerV2() throws Exception {
