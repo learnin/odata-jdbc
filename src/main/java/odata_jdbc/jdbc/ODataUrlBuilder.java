@@ -34,28 +34,28 @@ public class ODataUrlBuilder {
             });
         }
 
-        String wherePhrase = sqlParseResult.wherePhrase();
-        if (wherePhrase != null && !wherePhrase.isEmpty()) {
+        String whereClause = sqlParseResult.whereClause();
+        if (whereClause != null && !whereClause.isEmpty()) {
             // Logical Operators
             // FIXME: id = 'a==' のように値に = とかが入っているとそこまで置換されてしまうので修正必要
-            wherePhrase = wherePhrase.replaceAll("!=", "ne");
-            wherePhrase = wherePhrase.replaceAll("<>", "ne");
-            wherePhrase = wherePhrase.replaceAll("<=", "le");
-            wherePhrase = wherePhrase.replaceAll(">=", "ge");
-            wherePhrase = wherePhrase.replaceAll("=", "eq");
-            wherePhrase = wherePhrase.replaceAll("<", "lt");
-            wherePhrase = wherePhrase.replaceAll(">", "gt");
-            wherePhrase = replaceAllIgnoreCase(wherePhrase, " AND ", " and ");
-            wherePhrase = replaceAllIgnoreCase(wherePhrase, " OR ", " or ");
-            wherePhrase = replaceAllIgnoreCase(wherePhrase, " NOT ", " not ");
-            wherePhrase = replaceAllIgnoreCase(wherePhrase, " IN ", " in ");
+            whereClause = whereClause.replaceAll("!=", "ne");
+            whereClause = whereClause.replaceAll("<>", "ne");
+            whereClause = whereClause.replaceAll("<=", "le");
+            whereClause = whereClause.replaceAll(">=", "ge");
+            whereClause = whereClause.replaceAll("=", "eq");
+            whereClause = whereClause.replaceAll("<", "lt");
+            whereClause = whereClause.replaceAll(">", "gt");
+            whereClause = replaceAllIgnoreCase(whereClause, " AND ", " and ");
+            whereClause = replaceAllIgnoreCase(whereClause, " OR ", " or ");
+            whereClause = replaceAllIgnoreCase(whereClause, " NOT ", " not ");
+            whereClause = replaceAllIgnoreCase(whereClause, " IN ", " in ");
 
             // String Functions
-            wherePhrase = transformLikeToODataOperator(wherePhrase);
+            whereClause = transformLikeToODataOperator(whereClause);
             if (queryString.length() > 0) {
                 queryString.append("&");
             }
-            queryString.append("$filter=" + urlEncode(wherePhrase));
+            queryString.append("$filter=" + urlEncode(whereClause));
             // FIXME: テーブル名に別名をつけていて、hoge.column1 = 'xxx' みたいな場合の考慮
         }
 
@@ -77,19 +77,19 @@ public class ODataUrlBuilder {
         return Pattern.compile(regex, Pattern.CASE_INSENSITIVE).matcher(target).replaceAll(replacement);
     }
 
-    private String transformLikeToODataOperator(String wherePhrase) {
-        int likeIndex = StringUtil.indexOfIgnoreCase(wherePhrase, " LIKE ");
+    private String transformLikeToODataOperator(String whereClause) {
+        int likeIndex = StringUtil.indexOfIgnoreCase(whereClause, " LIKE ");
         if (likeIndex == -1) {
-            return wherePhrase;
+            return whereClause;
         }
-        int spaceIndexBeforeTargetColumn = wherePhrase.lastIndexOf(" ", likeIndex - 1);
+        int spaceIndexBeforeTargetColumn = whereClause.lastIndexOf(" ", likeIndex - 1);
         if (spaceIndexBeforeTargetColumn == -1) {
             spaceIndexBeforeTargetColumn = 0;
         }
-        String targetColumn = wherePhrase.substring(spaceIndexBeforeTargetColumn, likeIndex).trim();
+        String targetColumn = whereClause.substring(spaceIndexBeforeTargetColumn, likeIndex).trim();
 
 
-        String afterLike = wherePhrase.substring(likeIndex + " LIKE ".length()).trim();
+        String afterLike = whereClause.substring(likeIndex + " LIKE ".length()).trim();
         int targetValueIndex = afterLike.indexOf(" ");
         String targetValue;
         if (targetValueIndex == -1) {
@@ -119,7 +119,7 @@ public class ODataUrlBuilder {
             throw new RuntimeException();
         }
 
-        String result = wherePhrase.substring(0, spaceIndexBeforeTargetColumn) + " " + oDataOperator;
+        String result = whereClause.substring(0, spaceIndexBeforeTargetColumn) + " " + oDataOperator;
         if (targetValueIndex != -1) {
             result += afterLike.substring(targetValueIndex);
         }

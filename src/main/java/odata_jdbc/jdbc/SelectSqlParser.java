@@ -13,16 +13,16 @@ public class SelectSqlParser {
 
         validate(oneLineLowerCaseSql);
 
-        Map<String, String> sqlPhraseMap = splitPhrase(oneLineLowerCaseSql);
+        Map<String, String> sqlClauseMap = splitClause(oneLineLowerCaseSql);
 
-        String fromTable = extractFromTable(sqlPhraseMap.get("from"));
-        List<SelectColumn> selectColumns = parseSelectColumnsPhrase(sqlPhraseMap.get("select"));
+        String fromTable = extractFromTable(sqlClauseMap.get("from"));
+        List<SelectColumn> selectColumns = parseSelectColumnsClause(sqlClauseMap.get("select"));
 
         SqlParseResult result = new SqlParseResult(fromTable, selectColumns);
 
-        String wherePhrase = sqlPhraseMap.get("where");
-        if (!wherePhrase.isEmpty()) {
-            result.setWherePhrase(wherePhrase);
+        String whereClause = sqlClauseMap.get("where");
+        if (!whereClause.isEmpty()) {
+            result.setWhereClause(whereClause);
         }
         return result;
     }
@@ -42,24 +42,24 @@ public class SelectSqlParser {
         }
         if (StringUtil.indexOfIgnoreCase(sql, " select ", 1) != -1) {
             // 先頭以外に " select " があればエラー(サブクエリやインラインビュー、UNION等は非サポート)
-            throw new SQLSyntaxErrorException("not support multiple 'SELECT' phrase");
+            throw new SQLSyntaxErrorException("not support multiple 'SELECT' clause");
         }
 
         int fromIndex = StringUtil.indexOfIgnoreCase(sql, " from ");
         if (fromIndex == -1) {
             // " FROM " がなければエラー
-            throw new SQLSyntaxErrorException("not supported sql. required 'FROM' phrase");
+            throw new SQLSyntaxErrorException("not supported sql. required 'FROM' clause");
         }
         if (StringUtil.indexOfIgnoreCase(sql, " from ", fromIndex + 1) != -1) {
             // " FROM " が複数あればエラー(サブクエリやインラインビュー、UNION等は非サポート)
-            throw new SQLSyntaxErrorException("not support multiple 'FROM' phrase");
+            throw new SQLSyntaxErrorException("not support multiple 'FROM' clause");
         }
 
         int whereIndex = StringUtil.indexOfIgnoreCase(sql, " where ");
         if (whereIndex != -1) {
             if (StringUtil.indexOfIgnoreCase(sql, " where ", whereIndex + 1) != -1) {
                 // " WHERE " が複数あればエラー(サブクエリやインラインビュー、UNION等は非サポート)
-                throw new SQLSyntaxErrorException("not support multiple 'WHERE' phrase");
+                throw new SQLSyntaxErrorException("not support multiple 'WHERE' clause");
             }
             if (whereIndex < fromIndex) {
                 // " WHERE " が " FROM " よりも前にあればエラー
@@ -71,7 +71,7 @@ public class SelectSqlParser {
         if (groupByIndex != -1) {
             if (StringUtil.indexOfIgnoreCase(sql, " group by ", groupByIndex + 1) != -1) {
                 // " GROUP BY " が複数あればエラー(サブクエリやインラインビュー、UNION等は非サポート)
-                throw new SQLSyntaxErrorException("not support multiple 'GROUP BY' phrase");
+                throw new SQLSyntaxErrorException("not support multiple 'GROUP BY' clause");
             }
             if (groupByIndex < fromIndex) {
                 // " GROUP BY " が " FROM " よりも前にあればエラー
@@ -87,7 +87,7 @@ public class SelectSqlParser {
         if (havingIndex != -1) {
             if (StringUtil.indexOfIgnoreCase(sql, " having ", havingIndex + 1) != -1) {
                 // " HAVING " が複数あればエラー(サブクエリやインラインビュー、UNION等は非サポート)
-                throw new SQLSyntaxErrorException("not support multiple 'HAVING' phrase");
+                throw new SQLSyntaxErrorException("not support multiple 'HAVING' clause");
             }
             if (havingIndex < fromIndex) {
                 // " HAVING " が " FROM " よりも前にあればエラー
@@ -107,7 +107,7 @@ public class SelectSqlParser {
         if (orderByIndex != -1) {
             if (StringUtil.indexOfIgnoreCase(sql, " order by ", orderByIndex + 1) != -1) {
                 // " ORDER BY " が複数あればエラー(サブクエリやインラインビュー、UNION等は非サポート)
-                throw new SQLSyntaxErrorException("not support multiple 'ORDER BY' phrase");
+                throw new SQLSyntaxErrorException("not support multiple 'ORDER BY' clause");
             }
             if (orderByIndex < fromIndex) {
                 // " ORDER BY " が " FROM " よりも前にあればエラー
@@ -131,7 +131,7 @@ public class SelectSqlParser {
         if (offsetIndex != -1) {
             if (StringUtil.indexOfIgnoreCase(sql, " offset ", offsetIndex + 1) != -1) {
                 // " OFFSET " が複数あればエラー(サブクエリやインラインビュー、UNION等は非サポート)
-                throw new SQLSyntaxErrorException("not support multiple 'OFFSET' phrase");
+                throw new SQLSyntaxErrorException("not support multiple 'OFFSET' clause");
             }
             if (offsetIndex < fromIndex) {
                 // " OFFSET " が " FROM " よりも前にあればエラー
@@ -159,7 +159,7 @@ public class SelectSqlParser {
         if (fetchIndex != -1) {
             if (StringUtil.indexOfIgnoreCase(sql, " fetch ", fetchIndex + 1) != -1) {
                 // " FETCH " が複数あればエラー(サブクエリやインラインビュー、UNION等は非サポート)
-                throw new SQLSyntaxErrorException("not support multiple 'FETCH' phrase");
+                throw new SQLSyntaxErrorException("not support multiple 'FETCH' clause");
             }
             if (fetchIndex < fromIndex) {
                 // " FETCH " が " FROM " よりも前にあればエラー
@@ -188,37 +188,37 @@ public class SelectSqlParser {
         }
 
         if (StringUtil.indexOfIgnoreCase(sql," limit ") != -1) {
-            throw new SQLSyntaxErrorException("not support 'LIMIT' phrase. use 'FETCH' phrase");
+            throw new SQLSyntaxErrorException("not support 'LIMIT' clause. use 'FETCH' clause");
         }
     }
 
-    private Map<String, String> splitPhrase(String sql) throws SQLSyntaxErrorException {
+    private Map<String, String> splitClause(String sql) throws SQLSyntaxErrorException {
         Map<String, String> result = new HashMap<>();
 
         int fromIndex = StringUtil.indexOfIgnoreCase(sql, " from ");
-        String selectPhrase = sql.substring("select ".length(), fromIndex).trim();
-        if (StringUtil.indexOfIgnoreCase(selectPhrase, "distinct ") != -1) {
+        String selectClause = sql.substring("select ".length(), fromIndex).trim();
+        if (StringUtil.indexOfIgnoreCase(selectClause, "distinct ") != -1) {
             throw new SQLSyntaxErrorException("not supported distinct");
         }
-        result.put("select", selectPhrase);
+        result.put("select", selectClause);
 
-        String fromPhrase = extractFromPhrase(sql);
-        if (StringUtil.indexOfIgnoreCase(fromPhrase, " join ") != -1 || fromPhrase.indexOf(",") != -1) {
+        String fromClause = extractFromClause(sql);
+        if (StringUtil.indexOfIgnoreCase(fromClause, " join ") != -1 || fromClause.indexOf(",") != -1) {
             throw new SQLSyntaxErrorException("not supported join sql");
         }
-        result.put("from", fromPhrase);
-        result.put("where", extractWherePhrase(sql));
-        result.put("group by", extractGroupByPhrase(sql));
-        result.put("having", extractHavingPhrase(sql));
-        result.put("order by", extractOrderByPhrase(sql));
-        result.put("offset", extractOffsetPhrase(sql));
-        result.put("fetch", extractFetchPhrase(sql));
+        result.put("from", fromClause);
+        result.put("where", extractWhereClause(sql));
+        result.put("group by", extractGroupByClause(sql));
+        result.put("having", extractHavingClause(sql));
+        result.put("order by", extractOrderByClause(sql));
+        result.put("offset", extractOffsetClause(sql));
+        result.put("fetch", extractFetchClause(sql));
         return result;
     }
 
-    private String substringToPhrase(String sql, String... phrases) {
-        for (String phrase : phrases) {
-            int index = StringUtil.indexOfIgnoreCase(sql, phrase);
+    private String substringToClause(String sql, String... clauses) {
+        for (String clause : clauses) {
+            int index = StringUtil.indexOfIgnoreCase(sql, clause);
             if (index != -1) {
                 return sql.substring(0, index).trim();
             }
@@ -226,58 +226,58 @@ public class SelectSqlParser {
         return sql;
     }
 
-    private String extractFromPhrase(String sql) {
+    private String extractFromClause(String sql) {
         int fromIndex = StringUtil.indexOfIgnoreCase(sql, " from ");
-        String fromPhrase = sql.substring(fromIndex + " from ".length()).trim();
-        return substringToPhrase(fromPhrase, " where ", " group by ", " having ", " order by ", " offset ", " fetch ");
+        String fromClause = sql.substring(fromIndex + " from ".length()).trim();
+        return substringToClause(fromClause, " where ", " group by ", " having ", " order by ", " offset ", " fetch ");
     }
 
-    private String extractWherePhrase(String sql) {
+    private String extractWhereClause(String sql) {
         int whereIndex = StringUtil.indexOfIgnoreCase(sql, " where ");
         if (whereIndex == -1) {
             return "";
         }
-        String wherePhrase = sql.substring(whereIndex + " where ".length()).trim();
-        return substringToPhrase(wherePhrase, " group by ", " having ", " order by ", " offset ", " fetch ");
+        String whereClause = sql.substring(whereIndex + " where ".length()).trim();
+        return substringToClause(whereClause, " group by ", " having ", " order by ", " offset ", " fetch ");
     }
 
-    private String extractGroupByPhrase(String sql) {
+    private String extractGroupByClause(String sql) {
         int groupByIndex = StringUtil.indexOfIgnoreCase(sql," group by ");
         if (groupByIndex != -1) {
             return "";
         }
-        String groupByPhrase = sql.substring(groupByIndex + " group by ".length()).trim();
-        return substringToPhrase(groupByPhrase, " having ", " order by ", " offset ", " fetch ");
+        String groupByClause = sql.substring(groupByIndex + " group by ".length()).trim();
+        return substringToClause(groupByClause, " having ", " order by ", " offset ", " fetch ");
     }
 
-    private String extractHavingPhrase(String sql) {
+    private String extractHavingClause(String sql) {
         int havingIndex = StringUtil.indexOfIgnoreCase(sql," having ");
         if (havingIndex != -1) {
             return "";
         }
-        String havingPhrase = sql.substring(havingIndex + " having ".length()).trim();
-        return substringToPhrase(havingPhrase, " order by ", " offset ", " fetch ");
+        String havingClause = sql.substring(havingIndex + " having ".length()).trim();
+        return substringToClause(havingClause, " order by ", " offset ", " fetch ");
     }
 
-    private String extractOrderByPhrase(String sql) {
+    private String extractOrderByClause(String sql) {
         int orderByIndex = StringUtil.indexOfIgnoreCase(sql," order by ");
         if (orderByIndex != -1) {
             return "";
         }
-        String orderByPhrase = sql.substring(orderByIndex + " order by ".length()).trim();
-        return substringToPhrase(orderByPhrase, " offset ", " fetch ");
+        String orderByClause = sql.substring(orderByIndex + " order by ".length()).trim();
+        return substringToClause(orderByClause, " offset ", " fetch ");
     }
 
-    private String extractOffsetPhrase(String sql) {
+    private String extractOffsetClause(String sql) {
         int offsetIndex = StringUtil.indexOfIgnoreCase(sql," offset ");
         if (offsetIndex != -1) {
             return "";
         }
-        String offsetPhrase = sql.substring(offsetIndex + " offset ".length()).trim();
-        return substringToPhrase(offsetPhrase, " fetch ");
+        String offsetClause = sql.substring(offsetIndex + " offset ".length()).trim();
+        return substringToClause(offsetClause, " fetch ");
     }
 
-    private String extractFetchPhrase(String sql) {
+    private String extractFetchClause(String sql) {
         int fetchIndex = StringUtil.indexOfIgnoreCase(sql, " fetch ");
         if (fetchIndex != -1) {
             return "";
@@ -285,30 +285,30 @@ public class SelectSqlParser {
         return sql.substring(fetchIndex + " fetch ".length()).trim();
     }
 
-    private String extractFromTable(String fromPhrase) throws SQLSyntaxErrorException {
-        int fromTableSpaceIndex = fromPhrase.indexOf(" ");
+    private String extractFromTable(String fromClause) throws SQLSyntaxErrorException {
+        int fromTableSpaceIndex = fromClause.indexOf(" ");
         if (fromTableSpaceIndex != -1) {
-            return fromPhrase.substring(0, fromTableSpaceIndex);
+            return fromClause.substring(0, fromTableSpaceIndex);
         }
-        return fromPhrase;
+        return fromClause;
     }
 
-    private List<SelectColumn> parseSelectColumnsPhrase(String selectColumnsPhrase) throws SQLSyntaxErrorException {
+    private List<SelectColumn> parseSelectColumnsClause(String selectColumnsClause) throws SQLSyntaxErrorException {
         List<SelectColumn> results = new ArrayList<>();
 
-        if (selectColumnsPhrase.trim().startsWith("*")) {
-            if (!selectColumnsPhrase.trim().equals("*")) {
+        if (selectColumnsClause.trim().startsWith("*")) {
+            if (!selectColumnsClause.trim().equals("*")) {
                 throw new SQLSyntaxErrorException();
             }
             results.add(new SelectColumn("*", "*"));
             return results;
         }
-        return Arrays.asList(selectColumnsPhrase.split(",")).stream().map(columnPhrase -> {
-            int asIndex = StringUtil.indexOfIgnoreCase(columnPhrase, " as ");
+        return Arrays.asList(selectColumnsClause.split(",")).stream().map(columnClause -> {
+            int asIndex = StringUtil.indexOfIgnoreCase(columnClause, " as ");
             if (asIndex == -1) {
-                return new SelectColumn(columnPhrase.trim(), columnPhrase.trim());
+                return new SelectColumn(columnClause.trim(), columnClause.trim());
             }
-            return new SelectColumn(columnPhrase.substring(0, asIndex).trim(), columnPhrase.substring(asIndex + " as ".length()).trim());
+            return new SelectColumn(columnClause.substring(0, asIndex).trim(), columnClause.substring(asIndex + " as ".length()).trim());
         }).collect(Collectors.toList());
     }
 

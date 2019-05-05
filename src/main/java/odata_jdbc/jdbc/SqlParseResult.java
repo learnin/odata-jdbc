@@ -6,7 +6,10 @@ public class SqlParseResult {
 
     private final String fromTable;
     private final List<SelectSqlParser.SelectColumn> selectColumns;
-    private String wherePhrase;
+    private String whereClause;
+
+    // TODO: ODataUrlBuilderで値の中の = まで eq に置換しないようにするために、WHERE句の内容はwhereClauseでもつのをやめて、これでもつように修正する
+    private List<WherePredicate> wherePredicates;
 
     public SqlParseResult(String fromTable, List<SelectSqlParser.SelectColumn> selectColumns) {
         this.fromTable = fromTable;
@@ -21,11 +24,11 @@ public class SqlParseResult {
         return selectColumns;
     }
 
-    public void setWherePhrase(String wherePhrase) {
-        this.wherePhrase = wherePhrase;
+    public void setWhereClause(String whereClause) {
+        this.whereClause = whereClause;
     }
 
-    public String wherePhrase() {
-        return wherePhrase;
+    public String whereClause() {
+        return whereClause;
     }
 }
