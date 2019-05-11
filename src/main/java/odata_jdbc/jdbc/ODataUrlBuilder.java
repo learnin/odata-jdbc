@@ -38,11 +38,14 @@ public class ODataUrlBuilder {
         if (whereClause != null && !whereClause.isEmpty()) {
             // Logical Operators
             // FIXME: id = 'a==' のように値に = とかが入っているとそこまで置換されてしまうので修正必要
+            // -> パース時にWHERE句を1つの文字列ではなく、Ltst<WherePredicate>にすることを考え方が、そこまでしなくても
+            //    以下の置換処理を対象がシングルクォーテーションの外かどうか(置換対象文字以前のシングルクォーテーションを先頭から数えて偶数個か（''は除く））を見ながら置換すればよさそう
             whereClause = whereClause.replaceAll("!=", "ne");
             whereClause = whereClause.replaceAll("<>", "ne");
             whereClause = whereClause.replaceAll("<=", "le");
             whereClause = whereClause.replaceAll(">=", "ge");
-            whereClause = whereClause.replaceAll("=", "eq");
+//            whereClause = whereClause.replaceAll("=", "eq");
+            whereClause = replaceAllExcludeWithinLiteral(whereClause, "=", "eq");
             whereClause = whereClause.replaceAll("<", "lt");
             whereClause = whereClause.replaceAll(">", "gt");
             whereClause = replaceAllIgnoreCase(whereClause, " AND ", " and ");
@@ -71,6 +74,41 @@ public class ODataUrlBuilder {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String replaceExcludeWithinLiteral(String target, String replaced, String replacement) {
+        int replacedIndex = target.indexOf(replaced);
+        if (replacedIndex == -1) {
+            return target;
+        }
+        int singleQuoteCount = 0;
+        int searchIndex = -1;
+        while (true) {
+            int singleQuoteIndex = target.indexOf("'", searchIndex + 1);
+            if (singleQuoteIndex == -1 || singleQuoteIndex >= replacedIndex) {
+                break;
+            }
+            if ("'".equals(target.substring(singleQuoteIndex + 1, singleQuoteIndex + 2))) {
+                // エスケープされたシングルクォーテーション
+                searchIndex = singleQuoteIndex + 1;
+            } else {
+                singleQuoteCount++;
+                searchIndex = singleQuoteIndex;
+            }
+        }
+        if (singleQuoteCount % 2 == 0) {
+            return target.substring(0, replacedIndex) + replacement + target.substring(replacedIndex + 1);
+        }
+        return target;
+    }
+
+    private String replaceAllExcludeWithinLiteral(String target, String replaced, String replacement) {
+        int replacedCount = target.split(replaced).length;
+        String result = target;
+        for (int i = 0; i < replacedCount; i++) {
+            result = replaceExcludeWithinLiteral(result, replaced, replacement);
+        }
+        return result;
     }
 
     private String replaceAllIgnoreCase(String target, String regex, String replacement) {

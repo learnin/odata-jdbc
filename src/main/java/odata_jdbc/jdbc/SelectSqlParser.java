@@ -27,6 +27,15 @@ public class SelectSqlParser {
         return result;
     }
 
+//    private List<WherePredicate> parseWhereClause(String whereClause) {
+//        List<WherePredicate> result = new ArrayList<>();
+//        if (whereClause.isEmpty()) {
+//            return result;
+//        }
+//        whereClause.split(" AND ")
+//        return result;
+//    }
+
     private String normalize(String sql) {
         return sql
                 .replaceAll("\\r\\n|\\r|\\n", "\\n") // 改行コードをLFに統一

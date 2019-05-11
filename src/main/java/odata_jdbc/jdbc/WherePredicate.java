@@ -2,7 +2,9 @@ package odata_jdbc.jdbc;
 
 /**
  * SQLのWHERE句の述語(e.g. id = 1)を表す
+ * // FIXME: 削除する
  */
+@Deprecated
 public class WherePredicate {
 
     // 左辺
