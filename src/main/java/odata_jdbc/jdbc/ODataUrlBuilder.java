@@ -76,14 +76,16 @@ public class ODataUrlBuilder {
         }
     }
 
-    private String replaceExcludeWithinLiteral(String target, String replaced, String replacement) {
-        int replacedIndex = target.indexOf(replaced);
+    private static Tuple replaceExcludeWithinLiteral(String target, String replaced, String replacement, int index) {
+        int replacedIndex = target.indexOf(replaced, index);
         if (replacedIndex == -1) {
-            return target;
+            return new Tuple(replacedIndex, target);
         }
         int singleQuoteCount = 0;
         int searchIndex = -1;
         while (true) {
+            // FIXME: シングルクォーテーションは毎回1文字目から数え直しているので、メモ化させる等して
+            // どの文字indexでシングルクォーテーション何個目（または奇数か偶数か/isOpen?）という情報を保持させる
             int singleQuoteIndex = target.indexOf("'", searchIndex + 1);
             if (singleQuoteIndex == -1 || singleQuoteIndex >= replacedIndex) {
                 break;
@@ -97,18 +99,31 @@ public class ODataUrlBuilder {
             }
         }
         if (singleQuoteCount % 2 == 0) {
-            return target.substring(0, replacedIndex) + replacement + target.substring(replacedIndex + 1);
+            return new Tuple(replacedIndex, target.substring(0, replacedIndex) + replacement + target.substring(replacedIndex + 1));
         }
-        return target;
+        return new Tuple(replacedIndex, target);
     }
 
-    private String replaceAllExcludeWithinLiteral(String target, String replaced, String replacement) {
+    static String replaceAllExcludeWithinLiteral(String target, String replaced, String replacement) {
         int replacedCount = target.split(replaced).length;
         String result = target;
+        int index = 0;
         for (int i = 0; i < replacedCount; i++) {
-            result = replaceExcludeWithinLiteral(result, replaced, replacement);
+            Tuple tuple = replaceExcludeWithinLiteral(result, replaced, replacement, index);
+            index = tuple.index + 1;
+            result = tuple.value;
         }
         return result;
+    }
+
+    private static class Tuple {
+        final int index;
+        final String value;
+
+        Tuple(int index, String value) {
+            this.index = index;
+            this.value = value;
+        }
     }
 
     private String replaceAllIgnoreCase(String target, String regex, String replacement) {
