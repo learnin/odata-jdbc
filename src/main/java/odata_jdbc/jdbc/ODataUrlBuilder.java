@@ -40,14 +40,14 @@ public class ODataUrlBuilder {
             // FIXME: id = 'a==' のように値に = とかが入っているとそこまで置換されてしまうので修正必要
             // -> パース時にWHERE句を1つの文字列ではなく、Ltst<WherePredicate>にすることを考え方が、そこまでしなくても
             //    以下の置換処理を対象がシングルクォーテーションの外かどうか(置換対象文字以前のシングルクォーテーションを先頭から数えて偶数個か（''は除く））を見ながら置換すればよさそう
-            whereClause = whereClause.replaceAll("!=", "ne");
-            whereClause = whereClause.replaceAll("<>", "ne");
-            whereClause = whereClause.replaceAll("<=", "le");
-            whereClause = whereClause.replaceAll(">=", "ge");
+            whereClause = replaceAllExcludeWithinLiteral(whereClause,"!=", "ne");
+            whereClause = replaceAllExcludeWithinLiteral(whereClause,"<>", "ne");
+            whereClause = replaceAllExcludeWithinLiteral(whereClause,"<=", "le");
+            whereClause = replaceAllExcludeWithinLiteral(whereClause,">=", "ge");
 //            whereClause = whereClause.replaceAll("=", "eq");
-            whereClause = replaceAllExcludeWithinLiteral(whereClause, "=", "eq");
-            whereClause = whereClause.replaceAll("<", "lt");
-            whereClause = whereClause.replaceAll(">", "gt");
+            whereClause = replaceAllExcludeWithinLiteral(whereClause,"=", "eq");
+            whereClause = replaceAllExcludeWithinLiteral(whereClause,"<", "lt");
+            whereClause = replaceAllExcludeWithinLiteral(whereClause,">", "gt");
             whereClause = replaceAllIgnoreCase(whereClause, " AND ", " and ");
             whereClause = replaceAllIgnoreCase(whereClause, " OR ", " or ");
             whereClause = replaceAllIgnoreCase(whereClause, " NOT ", " not ");
@@ -99,7 +99,7 @@ public class ODataUrlBuilder {
             }
         }
         if (singleQuoteCount % 2 == 0) {
-            return new Tuple(replacedIndex, target.substring(0, replacedIndex) + replacement + target.substring(replacedIndex + 1));
+            return new Tuple(replacedIndex, target.substring(0, replacedIndex) + replacement + target.substring(replacedIndex + replaced.length()));
         }
         return new Tuple(replacedIndex, target);
     }
@@ -110,7 +110,7 @@ public class ODataUrlBuilder {
         int index = 0;
         for (int i = 0; i < replacedCount; i++) {
             Tuple tuple = replaceExcludeWithinLiteral(result, replaced, replacement, index);
-            index = tuple.index + 1;
+            index = tuple.index + replacement.length();
             result = tuple.value;
         }
         return result;
