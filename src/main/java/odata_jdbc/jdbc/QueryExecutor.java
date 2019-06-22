@@ -1,11 +1,16 @@
 package odata_jdbc.jdbc;
 
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.sql.SQLException;
+import java.time.temporal.ChronoUnit;
 import java.util.Properties;
 
 public class QueryExecutor {
@@ -22,6 +27,11 @@ public class QueryExecutor {
 
     public String executeQuery(String sql) throws SQLException {
         // FIXME: JDBC仕様ではjava.sql.Connectionはスレッドセーフであり、一般的なJDBCドライバはロックや直列化してスレッドセーフにしている模様なので対応必要
+
+        RetryPolicy<Object> retryPolicy = new RetryPolicy<>()
+                .handle(SocketTimeoutException.class)
+                .withBackoff(1, 4, ChronoUnit.SECONDS, 1.5)
+                .withMaxRetries(2);
         try {
             SqlParseResult sqlParseResult = new SelectSqlParser().parse(sql);
             URL url = new ODataUrlBuilder(serviceRootUrl, sqlParseResult).toURL();
@@ -36,7 +46,8 @@ public class QueryExecutor {
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept", "application/json");
             conn.setDoInput(true);
-            conn.connect();
+            Failsafe.with(retryPolicy).run(conn::connect);
+
             StringBuilder result = new StringBuilder();
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
                 while (true) {
