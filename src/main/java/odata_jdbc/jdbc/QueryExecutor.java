@@ -42,6 +42,8 @@ public class QueryExecutor {
             // TODO: 設定可能にする
             conn.setConnectTimeout(5000);
             conn.setReadTimeout(10000);
+            // TODO: CSRF対策としてX-Requested-Withヘッダをチェックされる場合用に更新系の処理の場合に設定可能にする（GETには不要）
+            conn.setRequestProperty("X-Requested-With", "XMLHttpRequest");
 
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept", "application/json");
