@@ -11,7 +11,7 @@ public class SqlTokenizer {
     // 前後にwhitespaceを必須とするキーワード
     private static final List<String> KEYWORDS = Arrays.asList("SELECT", "ORDER BY");
     // 前後にwhitespaceを必須とはしないキーワード（文字数が多いものからマッチングさせる必要があるため、文字数の多い順でソート）
-    private static final List<String> OPERATORS = Arrays.asList(",", "(", ")", "=", ">", ">=").stream().sorted((o1, o2) -> o2.length() - o1.length()).collect(Collectors.toList());
+    private static final List<String> OPERATORS = Arrays.asList(",", "(", ")", "=", ">", ">=", "<", "<=", "<>", "!=").stream().sorted((o1, o2) -> o2.length() - o1.length()).collect(Collectors.toList());
 
     private String sql;
     private int pos;
@@ -21,7 +21,7 @@ public class SqlTokenizer {
         this.pos = 0;
     }
 
-    List<SqlToken> tokenize() {
+    SqlTokens tokenize() {
         List<SqlToken> results = new ArrayList<>();
 
         for (int sqlLength = sql.codePointCount(0, sql.length()); pos < sqlLength;) {
@@ -40,7 +40,7 @@ public class SqlTokenizer {
                 beforeNextKeywordStrings.stream().forEach(beforeNextKeywordString -> results.add(new SqlToken(beforeNextKeywordString)));
             }
         }
-        return results;
+        return new SqlTokens(results);
     }
 
     List<String> readToNextKeyword() {

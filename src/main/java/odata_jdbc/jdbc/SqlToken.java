@@ -18,6 +18,10 @@ public class SqlToken {
         return Objects.equals(value, sqlToken.value);
     }
 
+    String value() {
+        return value;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(value);
