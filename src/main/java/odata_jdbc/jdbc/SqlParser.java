@@ -1,6 +1,7 @@
 package odata_jdbc.jdbc;
 
 import java.util.List;
+import java.util.Optional;
 
 public class SqlParser {
 
@@ -27,8 +28,31 @@ public class SqlParser {
         }
     }
 
-    private SqlStatement selectStatement() {
+    private SelectStatement selectStatement() {
+        SelectStatement statement = new SelectStatement();
+        tokens.next();
+        quantifier(statement);
+        selectList(statement);
+        tableExpression(statement);
+        return statement;
+    }
+
+    private SelectStatement tableExpression(SelectStatement statement) {
         return null;
+    }
+
+    private SelectStatement selectList(SelectStatement statement) {
+        return null;
+    }
+
+    private SelectStatement quantifier(SelectStatement statement) {
+        tokens.peek().ifPresent(sqlToken -> {
+            if (sqlToken.value().equalsIgnoreCase("DISTINCT")) {
+                statement.setQuantifier("DISTINCT");
+                tokens.nextPos();
+            }
+        });
+        return statement;
     }
 
     private SqlStatement insertStatement() {

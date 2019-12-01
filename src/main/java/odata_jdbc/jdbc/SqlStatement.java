@@ -1,4 +1,4 @@
 package odata_jdbc.jdbc;
 
-public class SqlStatement {
+public interface SqlStatement {
 }

@@ -2,17 +2,42 @@ package odata_jdbc.jdbc;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class SqlTokens {
 
     private final List<SqlToken> tokens;
+    private int pos;
 
     SqlTokens(List<SqlToken> tokens) {
         this.tokens = tokens;
+        this.pos = 0;
     }
 
     SqlStatementType statementType() {
         return SqlStatementType.from(tokens.get(0).value());
+    }
+
+    Optional<SqlToken> peek() {
+        return hasNext() ? Optional.of(tokens.get(pos)) : Optional.empty();
+    }
+
+    Optional<SqlToken> next() {
+        Optional<SqlToken> result = peek();
+        if (result.isPresent()) {
+            pos++;
+        }
+        return result;
+    }
+
+    void nextPos() {
+        if (hasNext()) {
+            pos++;
+        }
+    }
+
+    private boolean hasNext() {
+        return pos < tokens.size();
     }
 
     @Override
