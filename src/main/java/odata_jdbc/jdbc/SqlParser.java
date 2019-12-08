@@ -37,22 +37,34 @@ public class SqlParser {
         return statement;
     }
 
-    private SelectStatement tableExpression(SelectStatement statement) {
-        return null;
+    private void tableExpression(SelectStatement statement) {
     }
 
-    private SelectStatement selectList(SelectStatement statement) {
-        return null;
+    private boolean selectList(SelectStatement statement) {
+        return asterisk(statement) || selectSubList(statement);
     }
 
-    private SelectStatement quantifier(SelectStatement statement) {
+    private boolean selectSubList(SelectStatement statement) {
+        return true;
+    }
+
+    private boolean asterisk(SelectStatement statement) {
+        Optional<SqlToken> sqlToken = tokens.peek();
+        if (sqlToken.isPresent() && sqlToken.get().value().equals("*")) {
+            statement.addSelectList("*");
+            tokens.nextPos();
+            return true;
+        }
+        return false;
+    }
+
+    private void quantifier(SelectStatement statement) {
         tokens.peek().ifPresent(sqlToken -> {
             if (sqlToken.value().equalsIgnoreCase("DISTINCT")) {
                 statement.setQuantifier("DISTINCT");
                 tokens.nextPos();
             }
         });
-        return statement;
     }
 
     private SqlStatement insertStatement() {
