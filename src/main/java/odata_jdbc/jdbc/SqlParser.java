@@ -40,14 +40,35 @@ public class SqlParser {
     private void tableExpression(SelectStatement statement) {
     }
 
-    private boolean selectList(SelectStatement statement) {
-        return asterisk(statement) || selectSubList(statement);
+    private void selectList(SelectStatement statement) {
+        if (asterisk(statement)) {
+            return;
+        }
+        selectSubList(statement);
+        // TODO: カンマがなくなるまでselectSubListを繰り返す
     }
 
-    private boolean selectSubList(SelectStatement statement) {
+    private void selectSubList(SelectStatement statement) {
+        if (derivedColumn(statement)) {
+            return;
+        }
+        qualifier(statement);
+        period(statement);
+        // TODO: asterisk(statement);
+    }
+
+    private void qualifier(SelectStatement statement) {
+
+    }
+
+    private void period(SelectStatement statement) {
+
+    }
+
+    private boolean derivedColumn(SelectStatement statement) {
         return true;
     }
-
+    
     private boolean asterisk(SelectStatement statement) {
         Optional<SqlToken> sqlToken = tokens.peek();
         if (sqlToken.isPresent() && sqlToken.get().value().equals("*")) {
